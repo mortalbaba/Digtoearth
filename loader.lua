@@ -1,35 +1,68 @@
-local HttpService = game:GetService("HttpService")
+-- Gui Script by MortalHere
+local ScreenGui = Instance.new("ScreenGui")
+local Frame = Instance.new("Frame")
+local ToggleButton = Instance.new("TextButton")
+local SpinButton = Instance.new("TextButton")
+local CoinButton = Instance.new("TextButton")
+local PetButton = Instance.new("TextButton")
+local dragging, dragInput, dragStart, startPos
 
-local encoded = [[
-LS0gR3VpIFNjcmlwdCBieSBNb3J0YWxIZXJlCmxvY2FsIFNjcmVlbkd1aSA9IEluc3RhbmNlLm5ldygiU2NyZWVuR3VpIikKbG9jYWwgRnJhbWUgPSBJbnN0YW5jZS5uZXcoIkZyYW1lIikKbG9jYWwgVG9nZ2xlQnV0dG9uID0gSW5zdGFuY2UubmV3KCJUZXh0QnV0dG9uIikKbG9jYWwgU3BpbkJ1dHRvbiA9IEluc3RhbmNlLm5ldygiVGV4dEJ1dHRvbiIpCmxvY2FsIENvaW5CdXR0b24gPSBJbnN0YW5jZS5uZXcoIlRleHRCdXR0b24iKQpsb2NhbCBQZXRCdXR0b24gPSBJbnN0YW5jZS5uZXcoIlRleHRCdXR0b24iKQpsb2NhbCBQZXRCdXR0b24gPSBJbnN0YW5jZS5uZXcoIlRleHRCdXR0b24iKQpsb2NhbCBkcmFnZ2luZywgZHJhZ0lucHV0LCBkcmFnU3RhcnQsIHN0YXJ0UG9zCgpTY3JlZW5HdWkuUGFyZW50ID0gZ2FtZS5QbGF5ZXJzLkxvY2FsUGxheWVyOldhaXRGb3JDaGlsZCgiUGxheWVyR3VpIikKU2NyZW5HdWkuTmFtZSA9ICJDdXN0b21HdWkiCgotLSBGcmFtZSAoQW5hIFBhbmVsKQpGcmFtZS5OYW1lID0gIk1haW4iCkZyYW1lLlBhcmVudCA9IFNjcmVlbkd1aQpGcmFtZS5CYWNrZ3JvdW5kQ29sb3IzID0gQ29sb3IzLmZyb21SR0IoMjUsID
-UsIDI1LCAyNSkKRnJhbWUuUG9zaXRpb24gPSBVRGltMi5uZXcoMC4zLCAwLCAwLjMsIDApCkZyYW1lLlNpemUgPSBVRGltMi5uZX
-cwLCAyNTAsIDAsIDIwMCkKRnJhbWUuQWN0aXZlID0gdHJ1ZQpGcmFtZS5EcmFnZ2FibGUgPSB0cnVlCgotLSBUb2dnbGUgQnV0dG9u
-ClRvZ2dsZUJ1dHRvbi5OYW1lID0gIlRvZ2dsZSIKVG9nZ2xlQnV0dG9uLlBhcmVudCA9IFNjcmVlbkd1aQpUb2dnbGVCdXR0b24u
-QmFja2dyb3VuZENvbG9yMyA9IENvbG9yMy5mcm9tUkdCKDUwLCA1MCwgNTApClRvZ2dsZUJ1dHRvbi5Qb3NpdGlvbiA9IFVEaW0y
-Lm5ldygwLCAxMCwgMCwgMTApClRvZ2dsZUJ1dHRvbi5TaXplID0gVURpbTIubmV3KDAsIDEwMCwgMCwgNDApClRvZ2dsZUJ1dHRv
-bi5UZXh0ID0gIlRvZ2dsZSBNZW51IgpUb2dnbGVCdXR0b24uVGV4dENvbG9yMyA9IENvbG9yMy5mcm9tUkdCKDI1NSwgMjU1LCAy
-NTUpClRvZ2dsZUJ1dHRvbi5Nb3VzZUJ1dHRvbjFDbGljazpDb25uZWN0KGZ1bmN0aW9uKCkKCQlGcmFtZS5WaXNpYmxlID0gbm90
-IEZyYW1lLlZpc2libGUKZW5kKQoKCgotLSBJbmZpbml0ZSBTcGluIEJ1dHRvbgpTcGluQnV0dG9uLk5hbWUgPSAiU3Bpb
-iINClNwaW5CdXR0b24uUGFyZW50ID0gRnJhbWUKU3BpbkJ1dHRvbi5CYWNrZ3JvdW5kQ29sb3IzID0gQ29sb3IzLmZyb21SR0Io
-MTAwLCAxMDAsIDEwMCkKU3BpbkJ1dHRvbi5Qb3NpdGlvbiA9IFVEaW0yLm5ldygwLjEsIDAsIDAuMSwgMCkKU3BpbkJ1dHRvbi5T
-aXplID0gVURpbTIubmV3KDAsIDIwMCwgMCwgNDApClNwaW5CdXR0b24uVGV4dCA9ICJJbmZpbml0ZSBTcGluIgpTcGluQnV0dG9u
-LlRleHRDb2xvcjMgPSBDb2xvcjMuZnJvbVJHQigyNTUsIDI1NSwgMjU1KQpTcGluQnV0dG9uLk1vdXNlQnV0dG9uMUNsaWNrOkNv
-bm5lY3QoZnVuY3Rpb24oKQoJZ2FtZTpnZXRTZXJ2aWNlKCJSZXBsaWNhdGVkU3RvcmFnZSIpLlJlbW90ZXMuU3BpblByaXplRXZl
-bnQ6RmlyZVNlcnZlcigxMCkKZW5kKQoKCgotLSB4MTAgQ29pbiBCdXR0b24KQ29pbkJ1dHRvbi5OYW1lID0gIngxMENvaW4iCkNv
-aW5CdXR0b24uUGFyZW50ID0gRnJhbWUKQ29pbkJ1dHRvbi5CYWNrZ3JvdW5kQ29sb3IzID0gQ29sb3IzLmZyb21SR0IoMTAwLCAx
-MDAsIDEwMCkKQ29pbkJ1dHRvbi5Qb3NpdGlvbiA9IFVEaW0yLm5ldygwLjEsIDAsIDAuNCwgMCkKQ29pbkJ1dHRvbi5TaXplID0g
-VURpbTIubmV3KDAsIDIwMCwgMCwgNDApCkNvaW5CdXR0b24uVGV4dCA9ICJBZGQgeDEwIENvaW4iCkNvaW5CdXR0b24uVGV4dENv
-bG9yMyA9IENvbG9yMy5mcm9tUkdCKDI1NSwgMjU1LCAyNTUpCkNvaW5CdXR0b24uTW91c2VCdXR0b24xQ2xpY2s6Q29ubmVjdChi
-ZWZvcmUoKQogICAgZ2FtZTpnZXRTZXJ2aWNlKCJSZXBsaWNhdGVkU3RvcmFnZSIpLlJlbW90ZXMuU3BpblByaXplRXZlbnQ6Rmly
-ZVNlcnZlcig4KQplbmQpCgoKLS0gR2l2ZSBPcCBQZXQgQnV0dG9uClBldEJ1dHRvbi5OYW1lID0gIk9wUGV0IgpQZXRCdXR0b24u
-UGFyZW50ID0gRnJhbWUKUGV0QnV0dG9uLkJhY2tncm91bmRDb2xvcjMgPSBDb2xvcjMuZnJvbVJHQigxMDAsIDEwMCwgMTAwKQpQ
-ZXRCdXR0b24uUG9zaXRpb24gPSBVRGltMi5uZXcoMC4xLCAwLCAwLjcsIDApClBldEJ1dHRvbi5TaXplID0gVURpbTIubmV3KDAs
-IDIwMCwgMCwgNDApClBldEJ1dHRvbi5UZXh0ID0gIkdpdmUgT3AgUGV0Ig0KUGV0QnV0dG9uLlRleHRDb2xvcjMgPSBDb2xvcjMu
-ZnJvbVJHQigyNTUsIDI1NSwgMjU1KQpQZXRCdXR0b24uTW91c2VCdXR0b24xQ2xpY2s6Q29ubmVjdChiZWZvcmUoKQogICAgZ2Ft
-ZTpnZXRTZXJ2aWNlKCJSZXBsaWNhdGVkU3RvcmFnZSIpLlJlbW90ZXMuU3BpblByaXplRXZlbnQ6RmlyZVNlcnZlcig0KQplbmQp
-Cg==
-]]
+ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+ScreenGui.Name = "CustomGui"
 
-local decoded = HttpService:Base64Decode(encoded)
+-- Frame (Ana Panel)
+Frame.Name = "Main"
+Frame.Parent = ScreenGui
+Frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+Frame.Position = UDim2.new(0.3, 0, 0.3, 0)
+Frame.Size = UDim2.new(0, 250, 0, 200)
+Frame.Active = true
+Frame.Draggable = true
 
-loadstring(decoded)()
+-- Toggle Button
+ToggleButton.Name = "Toggle"
+ToggleButton.Parent = ScreenGui
+ToggleButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+ToggleButton.Position = UDim2.new(0, 10, 0, 10)
+ToggleButton.Size = UDim2.new(0, 100, 0, 40)
+ToggleButton.Text = "Toggle Menu"
+ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleButton.MouseButton1Click:Connect(function()
+	Frame.Visible = not Frame.Visible
+end)
+
+-- Infinite Spin Button
+SpinButton.Name = "Spin"
+SpinButton.Parent = Frame
+SpinButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+SpinButton.Position = UDim2.new(0.1, 0, 0.1, 0)
+SpinButton.Size = UDim2.new(0, 200, 0, 40)
+SpinButton.Text = "Infinite Spin"
+SpinButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+SpinButton.MouseButton1Click:Connect(function()
+	game:GetService("ReplicatedStorage").Remotes.SpinPrizeEvent:FireServer(10)
+end)
+
+-- x10 Coin Button
+CoinButton.Name = "x10Coin"
+CoinButton.Parent = Frame
+CoinButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+CoinButton.Position = UDim2.new(0.1, 0, 0.4, 0)
+CoinButton.Size = UDim2.new(0, 200, 0, 40)
+CoinButton.Text = "Add x10 Coin"
+CoinButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+CoinButton.MouseButton1Click:Connect(function()
+	game:GetService("ReplicatedStorage").Remotes.SpinPrizeEvent:FireServer(8)
+end)
+
+-- Give Op Pet Button
+PetButton.Name = "OpPet"
+PetButton.Parent = Frame
+PetButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+PetButton.Position = UDim2.new(0.1, 0, 0.7, 0)
+PetButton.Size = UDim2.new(0, 200, 0, 40)
+PetButton.Text = "Give Op Pet"
+PetButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+PetButton.MouseButton1Click:Connect(function()
+	game:GetService("ReplicatedStorage").Remotes.SpinPrizeEvent:FireServer(4)
+end)
